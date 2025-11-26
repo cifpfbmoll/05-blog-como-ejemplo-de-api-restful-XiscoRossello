@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Script de prueba rápida para la API del Blog
+# Script de prueba rápida para la API del Parking
 # Asegúrate de que el servidor esté corriendo: php spark serve
 
 BASE_URL="http://localhost:8080"
 echo "========================================="
-echo "  Pruebas de API RESTful - Blog CI4"
+echo "  Pruebas de API RESTful - Parking CI4"
 echo "========================================="
 echo ""
 
@@ -13,69 +13,113 @@ echo ""
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}1. Creando primer post...${NC}"
-curl -X POST "$BASE_URL/posts" \
+echo -e "${BLUE}1. Verificando estado del parking...${NC}"
+curl -X GET "$BASE_URL/vehicles/estado" \
+  -w "\nCódigo HTTP: %{http_code}\n\n"
+
+echo -e "${BLUE}2. Registrando entrada de primer vehículo...${NC}"
+curl -X POST "$BASE_URL/vehicles" \
   -H "Content-Type: application/json" \
   -d '{
-    "title": "Mi Primer Post en CI4",
-    "content": "Este es el contenido de mi primer post usando CodeIgniter 4 y SQLite.",
-    "category": "Desarrollo",
-    "tags": ["php", "codeigniter", "api"]
+    "matricula": "1234ABC",
+    "marca": "Toyota",
+    "modelo": "Corolla",
+    "color": "Blanco"
   }' \
   -w "\nCódigo HTTP: %{http_code}\n\n"
 
-echo -e "${BLUE}2. Creando segundo post...${NC}"
-curl -X POST "$BASE_URL/posts" \
+echo -e "${BLUE}3. Registrando entrada de segundo vehículo con plaza específica...${NC}"
+curl -X POST "$BASE_URL/vehicles" \
   -H "Content-Type: application/json" \
   -d '{
-    "title": "Introducción a SQLite",
-    "content": "SQLite es una base de datos ligera y perfecta para desarrollo.",
-    "category": "Bases de Datos",
-    "tags": ["sqlite", "database"]
+    "matricula": "5678DEF",
+    "marca": "Honda",
+    "modelo": "Civic",
+    "color": "Negro",
+    "plaza": 10
   }' \
   -w "\nCódigo HTTP: %{http_code}\n\n"
 
-echo -e "${BLUE}3. Listando todos los posts...${NC}"
-curl -X GET "$BASE_URL/posts" \
-  -w "\nCódigo HTTP: %{http_code}\n\n"
-
-echo -e "${BLUE}4. Obteniendo post específico (ID: 1)...${NC}"
-curl -X GET "$BASE_URL/posts/1" \
-  -w "\nCódigo HTTP: %{http_code}\n\n"
-
-echo -e "${BLUE}5. Intentando obtener post inexistente (ID: 999)...${NC}"
-curl -X GET "$BASE_URL/posts/999" \
-  -w "\nCódigo HTTP: %{http_code}\n\n"
-
-echo -e "${BLUE}6. Actualizando post (ID: 1)...${NC}"
-curl -X PUT "$BASE_URL/posts/1" \
+echo -e "${BLUE}4. Registrando entrada de tercer vehículo...${NC}"
+curl -X POST "$BASE_URL/vehicles" \
   -H "Content-Type: application/json" \
   -d '{
-    "title": "Mi Primer Post ACTUALIZADO"
+    "matricula": "9012GHI",
+    "marca": "Ford",
+    "modelo": "Focus",
+    "color": "Rojo"
   }' \
   -w "\nCódigo HTTP: %{http_code}\n\n"
 
-echo -e "${BLUE}7. Buscando posts con término 'ci4'...${NC}"
-curl -X GET "$BASE_URL/posts/search?term=ci4" \
+echo -e "${BLUE}5. Listando todos los vehículos...${NC}"
+curl -X GET "$BASE_URL/vehicles" \
   -w "\nCódigo HTTP: %{http_code}\n\n"
 
-echo -e "${BLUE}8. Intentando crear post con datos inválidos...${NC}"
-curl -X POST "$BASE_URL/posts" \
+echo -e "${BLUE}6. Verificando vehículos estacionados...${NC}"
+curl -X GET "$BASE_URL/vehicles/estacionados" \
+  -w "\nCódigo HTTP: %{http_code}\n\n"
+
+echo -e "${BLUE}7. Obteniendo vehículo específico (ID: 1)...${NC}"
+curl -X GET "$BASE_URL/vehicles/1" \
+  -w "\nCódigo HTTP: %{http_code}\n\n"
+
+echo -e "${BLUE}8. Buscando vehículo por matrícula exacta...${NC}"
+curl -X GET "$BASE_URL/vehicles/matricula/1234ABC" \
+  -w "\nCódigo HTTP: %{http_code}\n\n"
+
+echo -e "${BLUE}9. Intentando obtener vehículo inexistente (ID: 999)...${NC}"
+curl -X GET "$BASE_URL/vehicles/999" \
+  -w "\nCódigo HTTP: %{http_code}\n\n"
+
+echo -e "${BLUE}10. Actualizando vehículo (cambiar color)...${NC}"
+curl -X PUT "$BASE_URL/vehicles/1" \
   -H "Content-Type: application/json" \
   -d '{
-    "title": "Cor",
-    "content": "Muy"
+    "color": "Azul Metalizado"
   }' \
   -w "\nCódigo HTTP: %{http_code}\n\n"
 
-echo -e "${BLUE}9. Eliminando post (ID: 2)...${NC}"
-curl -X DELETE "$BASE_URL/posts/2" \
+echo -e "${BLUE}11. Buscando vehículos con término 'Toyota'...${NC}"
+curl -X GET "$BASE_URL/vehicles/search?term=Toyota" \
   -w "\nCódigo HTTP: %{http_code}\n\n"
 
-echo -e "${BLUE}10. Verificando que el post fue eliminado...${NC}"
-curl -X GET "$BASE_URL/posts/2" \
+echo -e "${BLUE}12. Intentando registrar vehículo con datos inválidos...${NC}"
+curl -X POST "$BASE_URL/vehicles" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "matricula": "AB",
+    "marca": "X"
+  }' \
+  -w "\nCódigo HTTP: %{http_code}\n\n"
+
+echo -e "${BLUE}13. Intentando registrar vehículo ya estacionado...${NC}"
+curl -X POST "$BASE_URL/vehicles" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "matricula": "1234ABC",
+    "marca": "Toyota",
+    "modelo": "Yaris",
+    "color": "Verde"
+  }' \
+  -w "\nCódigo HTTP: %{http_code}\n\n"
+
+echo -e "${BLUE}14. Verificando estado del parking actualizado...${NC}"
+curl -X GET "$BASE_URL/vehicles/estado" \
+  -w "\nCódigo HTTP: %{http_code}\n\n"
+
+echo -e "${BLUE}15. Registrando salida de vehículo (ID: 2)...${NC}"
+curl -X DELETE "$BASE_URL/vehicles/2" \
+  -w "\nCódigo HTTP: %{http_code}\n\n"
+
+echo -e "${BLUE}16. Verificando que el vehículo salió (estado actualizado)...${NC}"
+curl -X GET "$BASE_URL/vehicles/2" \
+  -w "\nCódigo HTTP: %{http_code}\n\n"
+
+echo -e "${BLUE}17. Estado final del parking...${NC}"
+curl -X GET "$BASE_URL/vehicles/estado" \
   -w "\nCódigo HTTP: %{http_code}\n\n"
 
 echo ""
@@ -84,7 +128,9 @@ echo -e "${GREEN}  Pruebas completadas${NC}"
 echo -e "${GREEN}=========================================${NC}"
 echo ""
 echo "Para ver los resultados formateados, instala 'jq':"
-echo "  sudo apt-get install jq"
+echo "  brew install jq  (macOS)"
+echo "  sudo apt-get install jq  (Linux)"
 echo ""
 echo "Luego ejecuta:"
-echo "  curl http://localhost:8080/posts | jq"
+echo "  curl http://localhost:8080/vehicles | jq"
+echo "  curl http://localhost:8080/vehicles/estado | jq"
